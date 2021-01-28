@@ -34,9 +34,9 @@ def load_vocab(vocab_file):
   """Loads a vocabulary file into a dictionary."""
   vocab = collections.OrderedDict()
   index = 0
-  with open_reader(vocab_file) as reader:
+  with tf.gfile.GFile(vocab_file, "r") as reader:
     while True:
-      token = reader.readline()
+      token = convert_to_unicode(reader.readline())
       if not token:
         break
       token = token.strip()
@@ -103,7 +103,7 @@ class BasicTokenizer(object):
 
   def tokenize(self, text):
     """Tokenizes a piece of text."""
-    text = _convert_to_unicode_or_throw(text)
+    text = convert_to_unicode(text)
     text = self._clean_text(text)
     orig_tokens = whitespace_tokenize(text)
     split_tokens = []
@@ -187,7 +187,7 @@ class WordpieceTokenizer(object):
       A list of wordpiece tokens.
     """
 
-    text = _convert_to_unicode_or_throw(text)
+    text = convert_to_unicode(text)
 
     output_tokens = []
     for token in whitespace_tokenize(text):
@@ -272,6 +272,24 @@ def _convert_to_unicode_or_throw(text):
                      "actually of type: %s" % (type(text).__name__))
   return text
 
+def convert_to_unicode(text):
+  """Converts `text` to Unicode (if it's not already), assuming utf-8 input."""
+  if six.PY3:
+    if isinstance(text, str):
+      return text
+    elif isinstance(text, bytes):
+      return text.decode("utf-8", "ignore")
+    else:
+      raise ValueError("Unsupported string type: %s" % (type(text)))
+  elif six.PY2:
+    if isinstance(text, str):
+      return text.decode("utf-8", "ignore")
+    elif isinstance(text, unicode):
+      return text
+    else:
+      raise ValueError("Unsupported string type: %s" % (type(text)))
+  else:
+    raise ValueError("Not running on Python2 or Python 3?")
 
 def printable_text(text):
   """Returns text encoded in a way suitable for print or `tf.logging`."""

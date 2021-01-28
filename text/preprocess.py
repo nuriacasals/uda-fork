@@ -266,7 +266,7 @@ def convert_examples_to_features(
       # st = " ".join([str(x) for x in tokens])
       st = ""
       for x in tokens:
-        if isinstance(x, unicode):
+        if isinstance(x, bytes):
           st += x.encode("ascii", "replace") + " "
         else:
           st += str(x) + " "
