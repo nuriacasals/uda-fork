@@ -94,6 +94,9 @@ flags.DEFINE_integer(
 flags.DEFINE_integer(
     "worker_id", 0,
     "An argument for parallel preprocessing. See 'replicas' for more details")
+  
+flags.DEFINE_string(
+    "input_file", "para_0", "Name of the .txt input file.")
 
 
 def get_data_for_worker(examples, replicas, worker_id):
@@ -462,7 +465,7 @@ def proc_and_save_unsup_data(
     tokenizer,
     max_seq_length, trunc_keep_right,
     aug_ops, aug_copy_num,
-    worker_id, replicas):
+    worker_id, replicas, input_file):
   # print random seed just to double check that we use different random seeds
   # for different runs so that we generate different augmented examples for the same original example.
   random_seed = np.random.randint(0, 100000)
@@ -490,7 +493,7 @@ def proc_and_save_unsup_data(
   aug_examples = sent_level_augment.run_augment(
       aug_examples, aug_ops, sub_set,
       aug_copy_num,
-      start, end, data_total_size)
+      start, end, data_total_size, input_file)
 
   labels = processor.get_labels() + ["unsup"]
   tf.logging.info("processing ori examples")
@@ -566,7 +569,7 @@ def main(_):
         FLAGS.raw_data_dir, data_stats_dir, unsup_out_dir,
         tokenizer, FLAGS.max_seq_length, FLAGS.trunc_keep_right,
         FLAGS.aug_ops, FLAGS.aug_copy_num,
-        FLAGS.worker_id, FLAGS.replicas)
+        FLAGS.worker_id, FLAGS.replicas, FLAGS.input_file)
 
 
 if __name__ == "__main__":

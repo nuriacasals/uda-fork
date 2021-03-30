@@ -60,7 +60,7 @@ def replace_with_length_check(
 
 
 def back_translation(examples, aug_ops, sub_set, aug_copy_num,
-                     start, end, data_total_size):
+                     start, end, data_total_size, input_file):
   """Run back translation."""
   use_min_length = 10
   use_max_length_diff_ratio = 0.5
@@ -77,9 +77,9 @@ def back_translation(examples, aug_ops, sub_set, aug_copy_num,
   else:
     text_per_example = 1
 
-  back_translation_file = "{:s}/{:s}/sample_{:.1f}/para/para_{:d}.txt".format(
+  back_translation_file = "{:s}/{:s}/sample_{:.1f}/para/{:s}.txt".format(
       FLAGS.back_translation_dir, sub_set,
-      temp, aug_copy_num)
+      temp, input_file)
   tf.logging.info("Using back translation file: {:s}".format(
       back_translation_file))
 
@@ -133,12 +133,13 @@ def back_translation(examples, aug_ops, sub_set, aug_copy_num,
 
 def run_augment(
     examples, aug_ops, sub_set, aug_copy_num,
-    start, end, dst_tot_size):
+    start, end, dst_tot_size, input_file):
   """Sentence level augmentations. Used before augmentation."""
   if aug_ops:
     if aug_ops.startswith("bt"):
       examples = back_translation(
-          examples, aug_ops, sub_set, aug_copy_num, start, end, dst_tot_size)
+          examples, aug_ops, sub_set, aug_copy_num, start, end,
+          dst_tot_size, input_file)
     else:
       pass
   return examples
