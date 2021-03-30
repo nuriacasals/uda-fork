@@ -27,7 +27,8 @@ from bert import modeling
 from utils import proc_data_utils
 from utils import raw_data_utils
 
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+import wandb #TODO: Delete in the final commit
+wandb.init(project='uda-strap')
 
 flags = tf.flags
 FLAGS = flags.FLAGS
@@ -94,6 +95,12 @@ flags.DEFINE_string(
 flags.DEFINE_string(
     "master", None,
     "If using a TPU, the address of the master.")
+flags.DEFINE_integer(
+    "gpu", 0,
+    help="GPU node.")
+flags.DEFINE_integer(
+    "cpu_jobs", 44,
+    help="Number of threads used by CPU.")
 
 ##### Configs related to training
 flags.DEFINE_string(
@@ -169,8 +176,21 @@ flags.DEFINE_float(
     "clip_norm", 1.0,
     help="Gradient clip hyperparameter.")
 
+# Set WandB config (TODO: Delete in the final commit)
+wandb.init(config={"learning_rate": FLAGS.learning_rate,
+"train_batch_size": FLAGS.train_batch_size,
+"eval_batch_size": FLAGS.eval_batch_size,
+"num_train_steps": FLAGS.num_train_steps,
+"num_warmup_steps": FLAGS.num_warmup_steps,
+"model": FLAGS.model_dir})
 
-
+# Set up CPU/GPU specifications
+os.environ["CUDA_VISIBLE_DEVICES"]=str(FLAGS.gpu)
+config = tf.ConfigProto(intra_op_parallelism_threads=FLAGS.cpu_jobs,
+                         inter_op_parallelism_threads=FLAGS.cpu_jobs,
+                         allow_soft_placement=True,
+                         device_count={'CPU': FLAGS.cpu_jobs})
+session = tf.Session(config=config)
 
 def main(_):
 
@@ -291,6 +311,9 @@ def main(_):
       for key in dev_result.keys():
         tf.logging.info("  %s = %s", key, str(dev_result[key]))
         dev_result[key] = dev_result[key].item()
+      wandb.log({'global_step': dev_result['global_step'],
+      'eval_classify_accuracy': dev_result['eval_classify_accuracy'],
+      'eval_classify_loss': dev_result['eval_classify_loss']})
       best_acc = max(best_acc, dev_result["eval_classify_accuracy"])
     tf.logging.info("***** Final evaluation result *****")
     tf.logging.info("Best acc: {:.3f}\n\n".format(best_acc))
