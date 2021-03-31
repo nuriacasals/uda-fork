@@ -177,20 +177,15 @@ flags.DEFINE_float(
     help="Gradient clip hyperparameter.")
 
 # Set WandB config (TODO: Delete in the final commit)
-wandb.init(config={"learning_rate": FLAGS.learning_rate,
-"train_batch_size": FLAGS.train_batch_size,
-"eval_batch_size": FLAGS.eval_batch_size,
-"num_train_steps": FLAGS.num_train_steps,
-"num_warmup_steps": FLAGS.num_warmup_steps,
-"model": FLAGS.model_dir})
+wandb.config.learning_rate = FLAGS.learning_rate
+wandb.config.train_batch_size = FLAGS.train_batch_size,
+wandb.config.eval_batch_size = FLAGS.eval_batch_size,
+wandb.config.num_train_steps = FLAGS.num_train_steps,
+wandb.config.num_warmup_steps = FLAGS.num_warmup_steps,
+wandb.config.model = FLAGS.model_dir
 
 # Set up CPU/GPU specifications
 os.environ["CUDA_VISIBLE_DEVICES"]=str(FLAGS.gpu)
-config = tf.ConfigProto(intra_op_parallelism_threads=FLAGS.cpu_jobs,
-                         inter_op_parallelism_threads=FLAGS.cpu_jobs,
-                         allow_soft_placement=True,
-                         device_count={'CPU': FLAGS.cpu_jobs})
-session = tf.Session(config=config)
 
 def main(_):
 
