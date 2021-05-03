@@ -98,9 +98,6 @@ flags.DEFINE_string(
 flags.DEFINE_integer(
     "gpu", 0,
     help="GPU node.")
-flags.DEFINE_integer(
-    "cpu_jobs", 44,
-    help="Number of threads used by CPU.")
 
 ##### Configs related to training
 flags.DEFINE_string(
